@@ -70,12 +70,17 @@ export function Form() {
       geocoder?.geocode({ address: newPlace.formatted_address }, (results, status) => {
         if (status === 'OK' && results?.length) {
           const {
-            place_id,
-            formatted_address,
+            place_id: placeId,
+            formatted_address: formattedAddress,
             geometry: { location: { lat, lng } },
-            types } = results[0];
+            types,
+          } = results[0];
           setGeocodeData({
-            place_id, formatted_address, lat: lat(), lng: lng(), types,
+            placeId,
+            formattedAddress,
+            lat: lat(),
+            lng: lng(),
+            type: types[0],
           });
         }
       });

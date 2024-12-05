@@ -1,7 +1,7 @@
 export interface GeocodeData {
-  place_id: string;
-  formatted_address: string;
+  placeId: string;
+  formattedAddress: string;
   lat: number;
   lng: number;
-  types: string[];
+  type: string;
 }
