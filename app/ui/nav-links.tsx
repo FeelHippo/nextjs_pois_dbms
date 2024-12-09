@@ -19,8 +19,8 @@ export function NavLinks() {
           [
             ['/', 'Home'],
             ['/dashboard', 'Dashboard'],
-            ['/catalogue', 'Catalogue'],
-          ].map(([route, value], index) => 
+            ['/points-of-interest', 'Catalogue'],
+          ].map(([route, value], index) =>
             <li key={index} className="-mb-px mr-1">
               <Link
                 className={ `${baseClass} ${determineClassName(route)}` }

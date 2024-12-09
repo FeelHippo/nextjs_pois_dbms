@@ -19,3 +19,6 @@ export default {
     database: "postgres",
   },
 } satisfies Config;
+
+// in case of connection issues:
+// https://serverfault.com/a/656119

@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from 'zod';
-import { GeocodeData } from "./interfaces/geocode";
+import { GeocodeData } from './interfaces/geocode';
 import DB from './data/storage';
 import { pointsOfInterest } from './data/schema';
+import { eq } from "drizzle-orm";
 
 const schema = z.object({
   place: z.string({
@@ -50,18 +51,41 @@ export async function createPointOfInterest(
     return { message: 'Invalid Data' };
   }
 
-  const result = await DB.insert(pointsOfInterest).values({
-    placeId,
-    formattedAddress,
-    location: [lat, lng],
-    type,
-  });
-  console.log('### result', result, '###')
+  try {
 
-  const result_select = await DB.select().from(pointsOfInterest);
-  console.log('### result_select', result_select, '###')
+    await DB.insert(pointsOfInterest).values({
+      placeId,
+      formattedAddress,
+      location: [lat, lng],
+      type,
+    });
+
+  } catch {
+    return { message: 'Could not create' };
+  }
 
   revalidatePath('/points-of-interest');
-  redirect('/dashboard'); // /points-of-interest/new_id
+  redirect('/points-of-interest');
 
+}
+
+export async function readAllPointsOfInterest(): Promise<GeocodeData[]> {
+
+  return (
+    await DB.select().from(pointsOfInterest)
+  ).map(
+    ({ placeId, formattedAddress, location: [ lat, lng ], type }) =>
+      ({
+        placeId,
+        formattedAddress,
+        lat,
+        lng,
+        type,
+      } as GeocodeData),
+  );
+
+}
+
+export async function deletePointOfInterest(placeid: string): Promise<void> {
+  await DB.delete(pointsOfInterest).where(eq(pointsOfInterest.placeId, placeid));
 }

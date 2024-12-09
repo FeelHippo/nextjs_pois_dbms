@@ -39,7 +39,7 @@ export function Form() {
     initialState,
   );
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const places = useMapsLibrary('places');
   const geocoding = useMapsLibrary('geocoding');
 
@@ -48,45 +48,47 @@ export function Form() {
     [geocoding],
   );
 
-  useEffect(() => {
-    if (
-      !places ||
-      !inputRef.current
-    ) return;
+  useEffect(
+    () => {
+      if (!places || !inputRef.current) return;
 
-    const options = {
-      fields: ['geometry', 'name', 'formatted_address'],
-    };
+      setPlaceAutocomplete(
+        new places.Autocomplete(inputRef.current!, {
+          fields: ['geometry', 'name', 'formatted_address'],
+        }),
+      );
+    }, [places],
+  );
 
-    setPlaceAutocomplete(new places.Autocomplete(inputRef.current, options));
-  }, [places, inputRef]);
+  useEffect(
+    () => {
+      if (!placeAutocomplete) return;
 
-  useEffect(() => {
-    if (!placeAutocomplete) return;
-
-    placeAutocomplete.addListener('place_changed', () => {
-      const newPlace = placeAutocomplete.getPlace();
-      setSelectedPlace(newPlace);
-      geocoder?.geocode({ address: newPlace.formatted_address }, (results, status) => {
-        if (status === 'OK' && results?.length) {
-          const {
-            place_id: placeId,
-            formatted_address: formattedAddress,
-            geometry: { location: { lat, lng } },
-            types,
-          } = results[0];
-          setGeocodeData({
-            placeId,
-            formattedAddress,
-            lat: lat(),
-            lng: lng(),
-            type: types[0],
-          });
-        }
+      placeAutocomplete.addListener('place_changed', () => {
+        const newPlace = placeAutocomplete.getPlace();
+        setSelectedPlace(newPlace);
+        geocoder?.geocode({ address: newPlace.formatted_address }, (results, status) => {
+          if (status === 'OK' && results?.length) {
+            const {
+              place_id: placeId,
+              formatted_address: formattedAddress,
+              geometry: { location: { lat, lng } },
+              types,
+            } = results[0];
+            setGeocodeData({
+              placeId,
+              formattedAddress,
+              lat: lat(),
+              lng: lng(),
+              type: types[0],
+            });
+          }
+        });
       });
-    });
 
-  }, [placeAutocomplete, selectedPlace, geocoder]);
+    },
+    [placeAutocomplete, selectedPlace, geocoder],
+  );
 
 
   return (
@@ -112,7 +114,10 @@ export function Form() {
           </div>
         </div>
       </div>
-      <p aria-live="polite">{state?.message}</p>
+      <span
+        className="mt-2 text-sm text-red-500"
+        aria-live="polite">{state?.message}
+      </span>
       <button
         type='submit'
         className='w-80 bg-blue-100 text-blue-700 border rounded p-4'
